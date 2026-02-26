@@ -1,6 +1,6 @@
 # Deploy automático do microserviço Estado (estilo Netlify/CI-CD).
 # Dispara ao dar push na main; conecta no servidor via SSH e roda git pull + docker compose.
-# Requer os secrets: HOST, USERNAME, SSH_KEY (ver DEPLOY-ESTADO-CI-CD.md).
+# Requer os secrets: SERVER_HOST, SERVER_USER, SSH_PRIVATE_KEY (ver DEPLOY-ESTADO-CI-CD.md).
 
 name: Deploy Microserviço Estado
 
@@ -16,9 +16,9 @@ jobs:
       - name: Executar comandos no servidor via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/meu-projeto-test
             git pull origin main

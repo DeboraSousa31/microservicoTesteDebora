@@ -6,3 +6,6 @@ target/
 node_modules/
 dist/
 build/
+
+# Dados de deploy (nunca versionar — use deploy-secrets.example como modelo)
+deploy-secrets.local

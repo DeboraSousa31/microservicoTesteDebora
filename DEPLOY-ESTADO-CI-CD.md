@@ -2,7 +2,7 @@
 
 Este guia explica como configurar o fluxo para que **cada push na branch `main`** dispare um deploy automático no servidor **cerurb-teste** (ou outro que você use), sem precisar entrar no servidor manualmente.
 
-Há um workflow por módulo; todos usam os mesmos secrets (`HOST`, `USERNAME`, `SSH_KEY`) e o mesmo padrão: SSH no servidor → `git pull` → `docker compose up -d --build` dos serviços daquele módulo.
+Há um workflow por módulo; todos usam os mesmos secrets (`SERVER_HOST`, `SERVER_USER`, `SSH_PRIVATE_KEY`) e o mesmo padrão: SSH no servidor → `git pull` → `docker compose up -d --build` dos serviços daquele módulo.
 
 ---
 
@@ -29,28 +29,37 @@ Para o servidor poder fazer `git pull` do repositório privado:
 
 Assim o servidor consegue clonar/pull do repositório.
 
-### 1.3. Secrets no GitHub (acesso do GitHub ao servidor)
+### 1.3. Arquivo local (referência — não sobe no Git)
+
+Na raiz do projeto existem:
+
+- **`deploy-secrets.example`** — modelo com os 3 campos (versionado). Copie para `deploy-secrets.local` e preencha com seus dados.
+- **`deploy-secrets.local`** — ignorado pelo Git (está no `.gitignore`). Use este arquivo para guardar localmente os valores de `SERVER_HOST`, `SERVER_USER` e `SSH_PRIVATE_KEY`; os mesmos valores serão usados nos Secrets do GitHub (próxima seção).
+
+```bash
+cp deploy-secrets.example deploy-secrets.local
+# Edite deploy-secrets.local e preencha:
+# SERVER_HOST=192.168.168.5
+# SERVER_USER=foxinline
+# SSH_PRIVATE_KEY=<conteúdo completo do arquivo id_ed25519 (chave privada)>
+```
+
+Nunca faça commit de `deploy-secrets.local` — ele contém dados sensíveis.
+
+### 1.4. Secrets no GitHub (acesso do GitHub ao servidor)
 
 No repositório no GitHub:
 
 1. Vá em **Settings > Secrets and variables > Actions**.
-2. Clique em **New repository secret** e crie os três secrets:
+2. Clique em **New repository secret** e crie os três secrets (use os mesmos valores do seu `deploy-secrets.local`):
 
 | Nome do secret | Valor | Descrição |
 |----------------|--------|-----------|
-| **HOST** | IP ou domínio do servidor | Ex.: `cerurb-teste.foxinline.com` ou o IP |
-| **USERNAME** | Usuário SSH | Ex.: `foxinline` |
-| **SSH_KEY** | Conteúdo da chave **privada** | Conteúdo do arquivo `~/.ssh/id_rsa` do **seu computador** (ou de uma chave usada só para este deploy). **Não** use a chave do servidor aqui. |
+| **SERVER_HOST** | IP ou domínio do servidor | Ex.: `192.168.168.5` ou `cerurb-teste.foxinline.com` |
+| **SERVER_USER** | Usuário SSH | Ex.: `foxinline` |
+| **SSH_PRIVATE_KEY** | Conteúdo da chave **privada** | Conteúdo completo do arquivo `~/.ssh/id_ed25519` (ou `id_rsa`). Para ed25519/OpenSSH, inclua as linhas `-----BEGIN OPENSSH PRIVATE KEY-----` e `-----END OPENSSH PRIVATE KEY-----`. |
 
-Para **SSH_KEY**: no seu PC (ou onde gera as chaves para o GitHub), copie todo o conteúdo de `~/.ssh/id_rsa`, incluindo as linhas `-----BEGIN ... KEY-----` e `-----END ... KEY-----`, e cole no valor do secret.
-
-Se você ainda não tiver um par de chaves no **seu** computador para o GitHub usar:
-
-```bash
-ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_github_actions -N ""
-```
-
-Depois, no servidor, adicione a **parte pública** (`id_rsa_github_actions.pub`) em `~/.ssh/authorized_keys` do usuário `foxinline`. O secret **SSH_KEY** no GitHub será o conteúdo de `id_rsa_github_actions` (chave privada).
+A chave **pública** correspondente deve estar em `~/.ssh/authorized_keys` do usuário no servidor.
 
 ---
 
@@ -70,7 +79,7 @@ Cada módulo tem seu próprio workflow em `.github/workflows/`. Lista:
 | `deploy-situacao-juridica.yml` | `vue-situacao-juridica-module` `api-situacao-juridica` |
 | `deploy-situacao-ocupante.yml` | `vue-situacao-ocupante-module` `api-situacao-ocupante` |
 
-Todos disparam em **push na `main`** e em **workflow_dispatch**. Cada workflow usa **appleboy/ssh-action** para: conectar no servidor (HOST, USERNAME, SSH_KEY), rodar `cd ~/meu-projeto-test`, `git pull origin main`, `sudo docker compose up -d --build` dos serviços daquele módulo.
+Todos disparam em **push na `main`** e em **workflow_dispatch**. Cada workflow usa **appleboy/ssh-action** para: conectar no servidor (SERVER_HOST, SERVER_USER, SSH_PRIVATE_KEY), rodar `cd ~/meu-projeto-test`, `git pull origin main`, `sudo docker compose up -d --build` dos serviços daquele módulo.
 
 ---
 
@@ -92,7 +101,7 @@ Todos disparam em **push na `main`** e em **workflow_dispatch**. Cada workflow u
 - **Repositório clonado** em `~/meu-projeto-test` (ou ajuste o `cd` no workflow para o caminho real).
 - **Docker e Docker Compose** instalados.
 - **docker-compose.yml** (ou `compose.yaml`) na pasta do projeto, com os serviços `vue-estado-module` e `api-estado` definidos.
-- Usuário SSH (`USERNAME`) com permissão para:
+- Usuário SSH (`SERVER_USER`) com permissão para:
   - rodar `git pull` nessa pasta
   - rodar `sudo docker compose up -d --build ...`
 
@@ -105,8 +114,9 @@ Se o caminho no servidor for outro (por exemplo `~/projeto-microservico`), edite
 | Item | Onde |
 |------|------|
 | Workflows | `.github/workflows/deploy-estado.yml`, `deploy-tipo-comodo.yml`, … (um por módulo) |
-| Secrets no GitHub | `HOST`, `USERNAME`, `SSH_KEY` (compartilhados por todos) |
-| Servidor | cerurb-teste.foxinline.com (ou o que estiver em `HOST`) |
+| Secrets no GitHub | `SERVER_HOST`, `SERVER_USER`, `SSH_PRIVATE_KEY` (compartilhados por todos) |
+| Arquivo local (não versionado) | `deploy-secrets.local` — ver `deploy-secrets.example` |
+| Servidor | IP ou host em `SERVER_HOST` (ex.: `192.168.168.5`) |
 | Comandos no servidor | `cd ~/meu-projeto-test`, `git pull origin main`, `sudo docker compose up -d --build <vue-*-module> <api-*>` |
 
 Com isso, o deploy de cada microserviço fica automático a cada push na `main`, no estilo Netlify/CI-CD.
