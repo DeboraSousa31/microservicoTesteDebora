@@ -1,0 +1,123 @@
+/* Containers e Cartelas */
+.view-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  padding: 20px;
+}
+
+.content-card {
+  width: 100%;
+}
+
+.content-card .p-card-title {
+  text-align: center;
+}
+
+.p-card-title button {
+  float: right;
+}
+
+.header-title i {
+  font-size: 1.3rem;
+}
+
+.header {
+  width: 100%;
+  float: left;
+  color: white;
+}
+
+/* Botões */
+/* Mais específico */
+.p-button.info-button {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+
+.info-button:hover {
+  background-color: var(--primary-color-hover) !important;
+  border-color: var(--primary-color-hover) !important;
+}
+
+/* Ações dentro do card */
+.div-acoes {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+/* Footer de ações */
+.actions-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+/* Remove o fundo escuro do ConfirmDialog */
+.p-dialog-mask {
+  background-color: transparent !important;
+}
+
+
+
+/* css da tela TipoComodoformview.vue */
+
+.p-card-title button {
+  float: right;
+}
+
+.view-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  padding: 20px;
+}
+
+.content-card {
+  width: 100%;
+}
+
+.content-card .p-card-title {
+  text-align: center;
+}
+
+.actions-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.header {
+  width: 100%;
+  color: white;
+}
+
+.header {
+  width: 100%;
+  color: white;
+  background-color: var(--primary-color); /* Use a cor primária do seu tema */
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.header-title {
+  margin: 0; /* Remove a margem padrão do h3 */
+  font-size: 1.5rem;
+}
+
+.info-button {
+  max-height: 2.8rem;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.info-button:hover {
+  background-color: var(--primary-color-hover) !important;
+  border-color: var(--primary-color-hover) !important;
+}

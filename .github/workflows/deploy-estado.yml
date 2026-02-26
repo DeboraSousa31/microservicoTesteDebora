@@ -1,0 +1,25 @@
+# Deploy automático do microserviço Estado (estilo Netlify/CI-CD).
+# Dispara ao dar push na main; conecta no servidor via SSH e roda git pull + docker compose.
+# Requer os secrets: HOST, USERNAME, SSH_KEY (ver DEPLOY-ESTADO-CI-CD.md).
+
+name: Deploy Microserviço Estado
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executar comandos no servidor via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/meu-projeto-test
+            git pull origin main
+            sudo docker compose up -d --build vue-estado-module api-estado

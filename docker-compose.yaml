@@ -1,0 +1,594 @@
+services:
+  postgres:
+    #image: postgres:latest
+    image: postgis/postgis:17-3.5
+    container_name: postgres-cerurb
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: '@#fxil@#25'
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - docker-lan
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  api-situacao-ocupante:
+    build:
+      context: ./situacao-ocupante-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-situacao-ocupante:latest
+    container_name: api-situacao-ocupante
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      QUARKUS_HTTP_PORT: 8081
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/bancotestedouglas
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+
+
+    volumes:
+      # - ./situacao-ocupante-module/backend:/app
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+  auditoria-api:
+    build:
+      context: /opt/auditoria-cerurbpro/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: auditoria-api:latest
+    container_name: auditoria-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "9191:9191"
+    environment:
+      QUARKUS_HTTP_PORT: 9191
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres-cerurb:5432/CerurbProAuditoria
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_TRANSACTION_MANAGER_DEFAULT_TRANSACTION_TIMEOUT: 30000
+    networks:
+      - docker-lan
+
+  vue-situacao-ocupante-module:
+    image: vue-situacao-ocupante-module:latest
+    build:
+      context: "./situacao-ocupante-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/situacao-ocupante
+    container_name: vue-situacao-ocupante-module
+    ports:
+      - "4173:4173"
+    command: npm run dev -- --host 0.0.0.0 --port 4173
+    networks:
+      - docker-lan
+    depends_on:
+      - api-situacao-ocupante
+
+  vue-layout:
+    image: vue-layout:latest
+    build:
+      context: "./layout"
+      dockerfile: Dockerfile
+    container_name: vue-layout
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_SITUACAO_OCUPANTE_URL=https://cerurb-vue.foxinline.com/situacao-ocupante
+      - VITE_SITUACAO_JURIDICA_URL=https://cerurb-vue.foxinline.com/situacao-juridica
+      - VITE_ORGAO_URL=https://cerurb-vue.foxinline.com/orgao
+      - VITE_INTERESSADO_URL=https://cerurb-vue.foxinline.com/interessado
+      - VITE_ATUALIZACAO_URL=https://cerurb-vue.foxinline.com/atualizacao
+      - VITE_STATUS_URL=https://cerurb-vue.foxinline.com/status
+      - VITE_TIPO_COMODO_URL=https://cerurb-vue.foxinline.com/tipo-comodo
+      - VITE_TIPO_ORGAO_URL=https://cerurb-vue.foxinline.com/tipo-orgao
+      - VITE_ESTADO_URL=https://cerurb-vue.foxinline.com/estado
+
+
+    volumes:
+      - "./layout:/app"
+      - node_modules_vue_layout:/app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    networks:
+      - docker-lan
+
+  api-situacao-juridica:
+    build:
+      context: ./situacao-juridica-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-situacao-juridica:latest
+    container_name: api-situacao-juridica
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+    environment:
+      QUARKUS_HTTP_PORT: 8082
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/bancotestedouglas
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+
+    volumes:
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+  vue-situacao-juridica-module:
+    image: vue-situacao-juridica-module:latest
+    build:
+      context: "./situacao-juridica-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/situacao-juridica
+
+    container_name: vue-situacao-juridica-module
+    ports:
+      - "4175:4175"
+    command: npm run dev -- --host 0.0.0.0 --port 4175
+    networks:
+      - docker-lan
+    depends_on:
+      - api-situacao-juridica
+
+  api-orgao-empresa:
+    build:
+      context: ./orgao-empresa-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-orgao-empresa:latest
+    container_name: api-orgao-empresa
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    environment:
+      QUARKUS_HTTP_PORT: 8083
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/bancotestedouglas
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+
+    volumes:
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+  vue-orgao-empresa-module:
+    image: vue-orgao-empresa-module:latest
+    build:
+      context: "./orgao-empresa-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/orgao-empresa
+
+    container_name: vue-orgao-empresa-module
+    ports:
+      - "4177:4177"
+    command: npm run dev -- --host 0.0.0.0 --port 4177
+    networks:
+      - docker-lan
+    depends_on:
+      - api-orgao-empresa
+
+  api-interessado:
+    build:
+      context: ./interessado-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-interessado:latest
+    container_name: api-interessado
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
+    environment:
+      QUARKUS_HTTP_PORT: 8084
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/bancotestedouglas
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+
+    volumes:
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+  vue-interessado-module:
+    image: vue-interessado-module:latest
+    build:
+      context: "./interessado-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/interessado
+
+    container_name: vue-interessado-module
+    ports:
+      - "4179:4179"
+    command: npm run dev -- --host 0.0.0.0 --port 4179
+    networks:
+      - docker-lan
+    depends_on:
+      - api-interessado
+
+  api-atualizacao:
+    build:
+      context: ./atualizacao-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-atualizacao:latest
+    container_name: api-atualizacao
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+    environment:
+      QUARKUS_HTTP_PORT: 8085
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/bancotestedouglas
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+
+    volumes:
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+
+  vue-atualizacao-module:
+    image: vue-atualizacao-module:latest
+    build:
+      context: "./atualizacao-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/atualizacao
+
+    container_name: vue-atualizacao-module
+    ports:
+      - "4181:4181"
+    command: npm run dev -- --host 0.0.0.0 --port 4181
+    networks:
+      - docker-lan
+    depends_on:
+      - api-atualizacao
+
+  api-status:
+    build:
+      context: ./status-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-status:latest
+    container_name: api-status
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8086:8086"
+    environment:
+      QUARKUS_HTTP_PORT: 8086
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/bancotestedouglas
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+
+    volumes:
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+
+  vue-status-module:
+    image: vue-status-module:latest
+    build:
+      context: "./status-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/status
+
+    container_name: vue-status-module
+    ports:
+      - "4183:4183"
+    command: npm run dev -- --host 0.0.0.0 --port 4183
+    networks:
+      - docker-lan
+    depends_on:
+      - api-status
+
+  api-tipo-comodo:
+    build:
+      context: ./tipo-comodo-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-tipo-comodo:latest
+    container_name: api-tipo-comodo
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8087:8087"
+    environment:
+      QUARKUS_HTTP_PORT: 8087
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/bancotestedouglas
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+
+    volumes:
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+  vue-tipo-comodo-module:
+    image: vue-tipo-comodo-module:latest
+    build:
+      context: "./tipo-comodo-module/frontend/"
+      dockerfile: Dockerfile.prod
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/tipo-comodo
+
+    container_name: vue-tipo-comodo-module
+    ports:
+      - "4185:80"
+    networks:
+      - docker-lan
+    depends_on:
+      - api-tipo-comodo
+
+  api-tipo-orgao:
+    build:
+      context: ./tipo-orgao-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-tipo-orgao:latest
+    container_name: api-tipo-orgao
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8088:8088"
+    environment:
+      QUARKUS_HTTP_PORT: 8088
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/bancotestedouglas
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+    volumes:
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+
+  vue-tipo-orgao-module:
+    image: vue-tipo-orgao-module:latest
+    build:
+      context: "./tipo-orgao-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/tipo-orgao
+    container_name: vue-tipo-orgao-module
+    ports:
+      - "4187:4187"
+    command: npm run dev -- --host 0.0.0.0 --port 4187
+    networks:
+      - docker-lan
+    depends_on:
+      - api-tipo-orgao
+
+  api-estado:
+    build:
+      context: ./estado-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-estado:latest
+    container_name: api-estado
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8090:8090"
+    environment:
+      QUARKUS_HTTP_PORT: 8090
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres-cerurb:5432/cerurbPro
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: '@#fxil@#25'
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+      QUARKUS_HIBERNATE_ORM_LOG_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_LOG_FORMAT_SQL: "false"
+      QUARKUS_HIBERNATE_ORM_PACKAGES: br.com.foxinline.domain.model
+      QUARKUS_DEVSERVICES_ENABLED: "false"
+
+      # --- Variáveis auditoria ---
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191
+      AUDITORIA_API_MP_REST_SCOPE: javax.inject.Singleton
+      AUDITORIA_API_MP_REST_CONNECTTIMEOUT: 5000
+      AUDITORIA_API_MP_REST_READTIMEOUT: 10000
+
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+      QUARKUS_HTTP_CORS_HEADERS: accept, authorization, content-type, x-requested-with
+      QUARKUS_HTTP_CORS_METHODS: GET, POST, PUT, DELETE, OPTIONS
+    volumes:
+      - maven_cache:/root/.m2
+    networks:
+      - docker-lan
+
+
+  vue-estado-module:
+    image: vue-estado-module:latest
+    build:
+      context: "./estado-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/estado
+    container_name: vue-estado-module
+    ports:
+      - "4191:4191"
+    command: npm run dev -- --host 0.0.0.0 --port 4191
+    networks:
+      - docker-lan
+    depends_on:
+      - api-estado
+
+networks:
+  docker-lan:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  maven_cache:
+  node_modules_vue_situacao_ocupante_module:
+  node_modules_vue_situacao_juridica_module:
+  node_modules_vue_orgao_empresa_module:
+  node_modules_vue_interessado_module:
+  node_modules_vue_atualizacao_module:
+  node_modules_vue_status_module:
+  node_modules_vue_tipo_comodo_module:
+  node_modules_vue_tipo_orgao_module:
+  node_modules_vue_estado_module:
+  node_modules_vue_layout:

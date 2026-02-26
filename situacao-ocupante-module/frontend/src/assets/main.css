@@ -1,0 +1,105 @@
+/* Variáveis do tema Cerurb Pro */
+:root {
+  font-weight: normal;
+  --primary-color: #3b7ddd;
+  --primary-color-hover: #3a9bfb;
+  --background-color: #f8f9fa;
+  --cerurb-header-gradient: linear-gradient(135deg, #1288ff 0%, #0066cc 100%);
+  --cerurb-text-muted: #6c757d;
+  --cerurb-card-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  --cerurb-radius: 8px;
+}
+
+#app {
+  font-weight: normal;
+}
+
+body {
+  background-color: var(--background-color);
+}
+
+/* Bootstrap .bg-primary compatível com Cerurb */
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.p-floatlabel label {
+  font-size: 1rem !important;
+}
+
+/* Para Botões */
+.p-button {
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+.p-dialog-footer {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.p-tieredmenu-item-link {
+  text-decoration: none !important;
+}
+
+.p-error {
+  font-size: 0.875rem;
+  color: var(--p-red-500);
+  margin-top: 0.25rem;
+}
+
+.p-inputtext.p-invalid {
+  border-color: var(--p-red-500) !important;
+}
+
+/* Cards no estilo Cerurb */
+.card {
+  box-shadow: var(--cerurb-card-shadow) !important;
+  border-radius: var(--cerurb-radius);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+.card-header.card-fildset {
+  background: var(--primary-color) !important;
+  color: #fff !important;
+  border-radius: var(--cerurb-radius) var(--cerurb-radius) 0 0;
+  padding: 0.65rem 1rem;
+}
+.card-header.card-fildset h6 {
+  color: #fff !important;
+  margin: 0;
+  font-weight: 600;
+}
+.p-card {
+  border-radius: var(--cerurb-radius) !important;
+  box-shadow: var(--cerurb-card-shadow) !important;
+}
+.p-card .p-card-title {
+  font-weight: 600;
+  color: #2d3748;
+}
+.p-floatlabel label,
+.p-outputlabel-label {
+  color: var(--cerurb-text-muted) !important;
+}
+
+/* Header no estilo Cerurb (faixa azul com título) */
+.cerurb-header {
+  background: var(--cerurb-header-gradient);
+  color: #fff !important;
+  padding: 0.75rem 1.25rem;
+  margin: -20px -20px 20px -20px;
+  border-radius: 8px 8px 0 0;
+}
+.cerurb-header .header-title {
+  color: #fff !important;
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.25rem;
+}

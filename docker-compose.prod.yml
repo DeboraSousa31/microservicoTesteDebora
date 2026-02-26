@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # ------------------------------------------------------------------
+  # 1. Banco de Dados (PostGIS)
+  # - Nome do serviço e imagem atualizados para refletir o ambiente base.
+  # ------------------------------------------------------------------
+  postgres: # CORRIGIDO: Nome do serviço mudado para 'postgres'
+    image: postgis/postgis:17-3.5 # CORRIGIDO: Imagem alterada para PostGIS
+    container_name: postgres-tipo-comodo-prod
+    volumes:
+      # Garante a persistência dos dados de produção
+      - tipo-comodo-prod-data:/var/lib/postgresql/data
+    environment:
+      # ESSENCIAL: Carregue estas variáveis de um arquivo .env ou Secrets Manager
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    restart: unless-stopped
+    networks:
+      - tipo-comodo-network
+    # Healthcheck é necessário, mas não está definido aqui. Mantendo a dependência:
+    # healthcheck:
+    #   test: ["CMD-SHELL", "pg_isready -U postgres"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+
+  # ------------------------------------------------------------------
+  # 2. API Principal (Auditoria) - Dependência Requerida
+  # ------------------------------------------------------------------
+  auditoria-api: 
+    build:
+      context: /opt/auditoria-cerurbpro/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: auditoria-api:prod
+    container_name: auditoria-api-prod
+    depends_on:
+      postgres: # CORRIGIDO: Depende de 'postgres'
+        condition: service_started
+    environment:
+      # Variáveis de DB e a porta interna da API
+      QUARKUS_HTTP_PORT: 9191
+      # ... (Outras configs de produção)
+    restart: always
+    networks:
+      - tipo-comodo-network
+
+  # ------------------------------------------------------------------
+  # 3. API do Módulo Tipo Cômodo
+  # ------------------------------------------------------------------
+  api-tipo-comodo:
+    build:
+      context: ./tipo-comodo-module/backend/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: api-tipo-comodo:prod
+    container_name: api-tipo-comodo-prod
+    depends_on:
+      postgres: # CORRIGIDO: Depende de 'postgres'
+        condition: service_started
+      auditoria-api: # Depende da API principal para comunicação
+        condition: service_started
+    environment:
+      QUARKUS_HTTP_PORT: 8087
+      # Host da API principal na rede Docker
+      AUDITORIA_API_MP_REST_URL: http://auditoria-api:9191 
+      # Configurações de DB (usando variáveis de ambiente)
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      # CORRIGIDO: O host do DB agora é 'postgres'
+      QUARKUS_DATASOURCE_REACTIVE_URL: postgresql://postgres:5432/${DB_NAME} 
+      QUARKUS_DATASOURCE_USERNAME: ${DB_USER}
+      QUARKUS_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      # CORS em produção aponta para o domínio final
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: https://cerurb-vue.foxinline.com
+    restart: always
+    networks:
+      - tipo-comodo-network
+
+  # ------------------------------------------------------------------
+  # 4. Frontend Vue (Servido por Nginx interno após o build)
+  # ------------------------------------------------------------------
+  vue-tipo-comodo-module:
+    build:
+      context: "./tipo-comodo-module/frontend/"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://cerurb-vue.foxinline.com/api/tipo-comodo
+    image: vue-tipo-comodo-module:prod
+    container_name: vue-tipo-comodo-prod
+    depends_on:
+      - api-tipo-comodo 
+    restart: always
+    networks:
+      - tipo-comodo-network
+
+  # ------------------------------------------------------------------
+  # 5. Proxy Reverso (Nginx) - Ponto de Entrada para o Host
+  # ------------------------------------------------------------------
+  nginx-proxy:
+    image: nginx:stable-alpine
+    container_name: nginx-tipo-comodo-proxy
+    volumes:
+      # Mapeia o arquivo de configuração do Nginx (./docker/nginx/nginx.conf)
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - vue-tipo-comodo-module
+      - api-tipo-comodo
+    restart: always
+    networks:
+      - tipo-comodo-network
+
+# ------------------------------------------------------------------
+# Volumes e Networks
+# ------------------------------------------------------------------
+volumes:
+  # Volume dedicado para o banco de dados
+  tipo-comodo-prod-data:
+    driver: local
+
+networks:
+  tipo-comodo-network:
+    driver: bridge

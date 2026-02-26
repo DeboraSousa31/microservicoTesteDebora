@@ -1,0 +1,8 @@
+*.zip
+*.backup
+*.sql
+*.dump
+target/
+node_modules/
+dist/
+build/
