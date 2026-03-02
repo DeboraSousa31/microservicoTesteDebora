@@ -4,7 +4,7 @@ const exposedRoutes: Array<RouteRecordRaw> = [
   {
     path: "/tipo-comodo",
     name: "PesquisarTipoComodo",
-    component: () => import("@/views/PesquisarTipoComodoView.vue"),
+    component: () => import("../views/PesquisarTipoComodoView.vue"),
     meta: {
       title: "Pesquisar Tipo Cômodo",
     },
@@ -12,7 +12,7 @@ const exposedRoutes: Array<RouteRecordRaw> = [
   {
     path: "/tipo-comodo/novo",
     name: "CadastrarTipoComodo",
-    component: () => import("@/views/TipoComodoFormView.vue"),
+    component: () => import("../views/TipoComodoFormView.vue"),
     meta: {
       title: "Cadastrar Tipo Cômodo",
       mode: "cadastrar",
@@ -21,7 +21,7 @@ const exposedRoutes: Array<RouteRecordRaw> = [
   {
     path: "/tipo-comodo/editar/:id(\\d+)",
     name: "EditarTipoComodo",
-    component: () => import("@/views/TipoComodoFormView.vue"),
+    component: () => import("../views/TipoComodoFormView.vue"),
     props: true,
     meta: {
       title: "Editar Tipo Cômodo",
@@ -31,7 +31,7 @@ const exposedRoutes: Array<RouteRecordRaw> = [
   {
     path: "/tipo-comodo/visualizar/:id(\\d+)",
     name: "VisualizarTipoComodo",
-    component: () => import("@/views/TipoComodoFormView.vue"),
+    component: () => import("../views/TipoComodoFormView.vue"),
     props: true,
     meta: {
       title: "Visualizar Tipo Cômodo",

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 
-import FormComponent from '@/components/FormTipoComodoComponent.vue'
+import FormComponent from '../components/FormTipoComodoComponent.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import SplitButton from 'primevue/splitbutton'
-import useTipoComodoView from '@/composables/tipoComodoView'
+import useTipoComodoView from '../composables/tipoComodoView'
 
 const {
   // pageTitle,

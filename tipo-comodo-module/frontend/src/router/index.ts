@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import HomeView from '@/views/HomeView.vue'
+import HomeView from '../views/HomeView.vue'
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import exposedRoutes from './exposedRoutes'
 
@@ -16,7 +16,7 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory((import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL),
   routes,
 })
 

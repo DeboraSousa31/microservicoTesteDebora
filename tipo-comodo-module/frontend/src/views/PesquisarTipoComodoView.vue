@@ -5,7 +5,7 @@ import FloatLabel from "primevue/floatlabel";
 import Column from "primevue/column";
 import GenericDataTable from "../components/shared/GenericDataTable.vue";
 import GenericDropdown from "../components/shared/GenericDropdown.vue";
-import { useTipoComodo } from "@/composables/tipoComodoPesquisa";
+import { useTipoComodo } from "../composables/tipoComodoPesquisa";
 
 const {
   API_BASE_URL,

@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import FormComponent from '@/components/FormTipoComodoComponent.vue'
+import FormComponent from '../components/FormTipoComodoComponent.vue'
 // import { useAppToast } from '@/composables/useAppToast';
 import Card from 'primevue/card'
 import Button from 'primevue/button'
