@@ -151,7 +151,7 @@ async function fetchEstado(lazyParams: any, filters: any) {
     const response = await axios.get<{
       content: Estado[];
       totalElements: number;
-    }>(`${API_BASE_URL}/estado/pesquisar/`, { params });
+    }>(`${API_BASE_URL}/pesquisar`, { params });
     if (response.status >= 200 && response.status < 300) {
       return response.data;
     } else {
@@ -195,7 +195,7 @@ async function removerItem(item: Estado) {
 
       if (confirmed) {
         const response = await axios.delete(
-          `${API_BASE_URL}/estado?id=${item.id}&idUsuario=32&idCredenciadaUsuario=49393`
+          `${API_BASE_URL}?id=${item.id}&idUsuario=32&idCredenciadaUsuario=49393`&idUsuario=32&idCredenciadaUsuario=49393`
         );
 
         if (response.status >= 200 && response.status < 300) {

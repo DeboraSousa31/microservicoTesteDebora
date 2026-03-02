@@ -129,7 +129,7 @@ async function handleDelete() {
       // Verifica o resultado da interação do usuário.
       if (confirmed) {
         const response = await axios.delete(
-          `${API_BASE_URL}/estado?id=${currentSituacaoId.value}&idUsuario=32&idCredenciadaUsuario=49393`,
+          `${API_BASE_URL}?id=${currentSituacaoId.value}&idUsuario=32&idCredenciadaUsuario=49393`,
         )
         if (response.status >= 200 && response.status < 300) {
           if (window.showHostToast) {

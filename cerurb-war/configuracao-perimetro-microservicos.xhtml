@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Fragmento para incluir na tela de Configuração do Cerurb (WAR).
+  Aba Perímetro: cards que chamam os módulos Vue dos microserviços.
+  Inclua este conteúdo dentro da tab "perimetro" (id="perimetro"), após o card de Estado.
+
+  No projeto WAR, crie as páginas .xhtml que fazem o redirect ou iframe para o Vue:
+  - pesquisarEstadoVue.xhtml, estadoVue.xhtml (já existem)
+  - pesquisarTipoComodoVue.xhtml, tipoComodoVue.xhtml
+  - pesquisarTipoOrgaoVue.xhtml, tipoOrgaoVue.xhtml
+  - pesquisarOrgaoVue.xhtml, orgaoVue.xhtml
+  - pesquisarInteressadoVue.xhtml, interessadoVue.xhtml
+  - pesquisarAtualizacaoVue.xhtml, atualizacaoVue.xhtml
+  - pesquisarStatusVue.xhtml, statusVue.xhtml
+  - pesquisarSituacaoJuridicaVue.xhtml, situacaoJuridicaVue.xhtml
+  - pesquisarSituacaoOcupanteVue.xhtml, situacaoOcupanteVue.xhtml
+-->
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- Estado (já existe na sua tela; aqui como referência do padrão) -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fa-solid fa-map"></i>
+                    Estado
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarEstadoVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="estadoVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tipo Cômodo -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fa fa-bed"></i>
+                    Tipo Cômodo
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarTipoComodoVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="tipoComodoVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tipo Órgão -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fas fa-briefcase"></i>
+                    Tipo de Órgão
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarTipoOrgaoVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="tipoOrgaoVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Órgão / Empresa -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fas fa-building"></i>
+                    Órgão / Empresa
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarOrgaoVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="orgaoVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interessado -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fa-solid fa-handshake"></i>
+                    Interessado
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarInteressadoVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="interessadoVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Atualização -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    Atualização
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarAtualizacaoVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="atualizacaoVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fas fa-chart-bar"></i>
+                    Status
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarStatusVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="statusVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Situação Jurídica -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fa-solid fa-user-graduate"></i>
+                    Situação Jurídica
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarSituacaoJuridicaVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="situacaoJuridicaVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Situação Ocupante -->
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-header card-fildset bg-primary">
+                <h6 class="text-white">
+                    <i class="fa-solid fa-clipboard"></i>
+                    Situação Ocupante
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action" href="pesquisarSituacaoOcupanteVue.xhtml">
+                        <i class="fa fa-search"></i>
+                        Pesquisar
+                    </a>
+                    <a class="list-group-item list-group-item-action" href="situacaoOcupanteVue.xhtml">
+                        <i class="fa fa-plus"></i>
+                        Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</ui:composition>

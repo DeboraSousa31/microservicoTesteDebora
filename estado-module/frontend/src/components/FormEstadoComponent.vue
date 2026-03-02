@@ -145,7 +145,7 @@ async function carregarDados(id: number) {
   loading.value = true
   showCerurbLoading()
   try {
-    const response = await axios.get(`${API_BASE_URL}/estado/${id}`)
+    const response = await axios.get(`${API_BASE_URL}/${id}`)
     if (response.status >= 200 && response.status < 300) {
       const dadosApi = response.data
       formData.value.id = dadosApi.id
@@ -229,7 +229,7 @@ async function enviarDadosParaAPI() {
   loading.value = true
   showCerurbLoading()
 
-  const url: string = `${API_BASE_URL}/estado`
+  const url: string = `${API_BASE_URL}`
   const dataToSend = {
     id: isEditing.value ? props.situacaoId : undefined,
     nome: formData.value.nome,
