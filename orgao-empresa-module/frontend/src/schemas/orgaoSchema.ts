@@ -169,7 +169,7 @@ const orgaoSchemaMestre = z
       }
 
 
-      const tipoOrgaoNome = data.tipoOrgao?.nome?.trim();
+      const tipoOrgaoNome = (typeof data.tipoOrgao === 'object' && data.tipoOrgao && 'nome' in data.tipoOrgao) ? (data.tipoOrgao as { nome?: string }).nome?.trim() : (typeof data.tipoOrgao === 'string' ? data.tipoOrgao.trim() : undefined);
 
       if (
         tipoOrgaoNome === "Empresa" ||

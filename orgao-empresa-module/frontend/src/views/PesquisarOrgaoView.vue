@@ -278,7 +278,7 @@ async function fetchOrgao(lazyParams: any, filters: any) {
 
 // --- Lógica para AutoComplete ---
 const cidadeSuggestions = ref<Cidade[]>([]);
-const searchCidades = async (event) => {
+const searchCidades = async (event: { query?: string }) => {
   //if (!event.query) return;
   const query = event.query || '';
   const { data } = await axios.get(
@@ -289,7 +289,7 @@ const searchCidades = async (event) => {
 
 
 
-async function removerItem(item: SituacaoJuridica) {
+async function removerItem(item: { id: number; nome: string }) {
   if (window.showHostConfirmDialog) {
     try {
       const confirmed = await window.showHostConfirmDialog({

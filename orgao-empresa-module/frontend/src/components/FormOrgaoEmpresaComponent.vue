@@ -524,7 +524,7 @@
                 icon="pi pi-search"
                 title="Pesquisar Endereço"
                 :disabled="isViewing"
-                @loading="loading"
+                :loading="loading"
                 @click="pesquisarCepAPI"
               />
             </InputGroup>
@@ -636,7 +636,7 @@
               <label for="bairro">Bairro *</label>
             </FloatLabel>
           </VeeField>
-          <ErrorMessage nome="endereco.bairro" class="p-error" />
+          <ErrorMessage name="endereco.bairro" class="p-error" />
         </div>
 
         <div class="mb-4 col-md-1">
@@ -726,13 +726,16 @@ import type { RefSymbol } from "@vue/reactivity";
 import { veeValidateSchema } from "@/schemas/orgaoSchema";
 import ProgressSpinner from "primevue/progressspinner";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   mode: "cadastrar" | "editar" | "visualizar";
   situacaoId?: number | null;
   formType: "CPF" | "CNPJ";
-  optionValue: string;
-  modelValue: number | string | object | null;
-}>();
+  optionValue?: string;
+  modelValue?: number | string | object | null;
+}>(), {
+  optionValue: "",
+  modelValue: undefined,
+});
 
 const limparMascara = (valor: string | null | undefined): string => {
   return valor ? valor.replace(/\D/g, "") : "";
@@ -755,13 +758,13 @@ interface Estado {
 }
 
 interface Cidade {
-  id: number;
+  id: number | null;
   nome: string;
   estado: Estado | null;
 }
 
 interface Bairro {
-  id: number;
+  id: number | null;
   nome: string;
   cidade: Cidade | null;
 }
@@ -800,7 +803,7 @@ type FormData = {
   razaoSocial: string;
   telefone: string;
   tipoDocumento: TipoDocumento | string | null;
-  endereco: Endereco | null;
+  endereco: Endereco;
   tipoOrgao: TipoOrgao | null;
   dataNascimento: string;
   cpf: string;
@@ -865,7 +868,7 @@ const formData = ref<FormData>({
 });
 const isViewing = computed(() => props.mode === "visualizar");
 const activeValidationSchema = computed(() => {
-  return isViewing.value ? undefined : toTypedSchema(veeValidateSchema);
+  return isViewing.value ? undefined : toTypedSchema(veeValidateSchema as unknown as import('zod').ZodType<any>);
 });
 
 const {
@@ -876,7 +879,7 @@ const {
   resetForm,
   validateField,
 } = useForm({
-  validationSchema: activeValidationSchema,
+  validationSchema: activeValidationSchema as unknown as Record<string, unknown>,
   //validationSchema: veeValidateSchema,
   initialValues: {
     formType: props.formType,
@@ -1102,8 +1105,8 @@ async function enviarDadosParaAPI() {
       logradouro: formData.value.endereco.logradouro,
       numero: formData.value.endereco.numero,
       complemento: formData.value.endereco.complemento,
-      idCidade: formData.value.endereco.cidade?.id ?? null,
-      idBairro: formData.value.endereco.bairro?.id ?? null,
+      idCidade: (typeof formData.value.endereco.cidade === 'object' && formData.value.endereco.cidade && 'id' in formData.value.endereco.cidade) ? formData.value.endereco.cidade.id ?? null : null,
+      idBairro: (typeof formData.value.endereco.bairro === 'object' && formData.value.endereco.bairro && 'id' in formData.value.endereco.bairro) ? formData.value.endereco.bairro.id ?? null : null,
       bairroNome:
         typeof formData.value.endereco.bairro === "string"
           ? formData.value.endereco.bairro
@@ -1339,7 +1342,7 @@ watch(dateValueForCalendar, (newDate) => {
 const cidadesSugeridas = ref([]);
 const bairrosSugeridos = ref([]);
 
-const buscarCidades = async (event) => {
+const buscarCidades = async (event: { query?: string }) => {
   const query = event.query;
   if (!query || query.trim().length === 0) {
     cidadesSugeridas.value = [];
@@ -1357,7 +1360,7 @@ const buscarCidades = async (event) => {
     cidadesSugeridas.value = [];
   }
 };
-const buscarBairros = async (event) => {
+const buscarBairros = async (event: { query?: string }) => {
 
   const cidadeSelecionada = formData.value.endereco?.cidade;
 
@@ -1407,21 +1410,19 @@ const onBairroSelect = (event: any) => {
     };
     formData.value.endereco = {
       ...formData.value.endereco,
-
       ufEstado: cidadeDoBairro.ufEstado || "",
-      codigoIbge: cidadeDoBairro,
+      codigoIbge: (cidadeSelecionada && typeof cidadeSelecionada === 'object' && 'codigoIbge' in cidadeSelecionada) ? (cidadeSelecionada as { codigoIbge: string }).codigoIbge : '',
       nomeEstado: cidadeDoBairro.nomeEstado,
-      codigoIbge: cidadeSelecionada.codigoIbge,
       nomeCidade: bairroSelecionado.nomeCidade,
       cidadeId: bairroSelecionado.idCidade,
       bairroId: bairroSelecionado.id,
       bairroNome: bairroSelecionado.nome,
-    };
-    setFieldValue("endereco.cidade", cidadeDoBairro);
+    } as Endereco;
+    (setFieldValue as (n: string, v: unknown) => void)("endereco.cidade", cidadeDoBairro);
   }
 
   if (bairroSelecionado.ufEstado) {
-    setFieldValue("endereco.ufEstado", bairroSelecionado.ufEstado);
+    (setFieldValue as (n: string, v: unknown) => void)("endereco.ufEstado", bairroSelecionado.ufEstado);
   }
 };
 
@@ -1472,19 +1473,18 @@ const pesquisarCepAPI = async () => {
 
         formData.value.endereco = {
           ...formData.value.endereco,
-          logradouro: dadosViaCEP.logradouro,
-          complemento: dadosViaCEP.complemento,
+          logradouro: dadosViaCEP.logradouro ?? '',
+          complemento: dadosViaCEP.complemento ?? '',
           cidade: dadosDoSeuDB.cidade,
           bairro: dadosDoSeuDB.bairro || null,
           ufEstado: dadosDoSeuDB.bairro?.ufEstado || "",
-          codigoIbge: dadosDoSeuDB.cidade?.codigoIbge || "",
+          codigoIbge: dadosDoSeuDB.cidade?.codigoIbge || dadosViaCEP.ibge || "",
           nomeEstado: dadosDoSeuDB.bairro.nomeEstado,
-          codigoIbge: dadosViaCEP.ibge,
           nomeCidade: dadosDoSeuDB.bairro.nomeCidade,
-          cidadeId: dadosDoSeuDB.bairro.idCidade,
-          bairroId: dadosDoSeuDB.bairro.id,
+          cidadeId: dadosDoSeuDB.bairro.idCidade ?? null,
+          bairroId: dadosDoSeuDB.bairro.id ?? null,
           bairroNome: dadosDoSeuDB.bairro.nome,
-        };
+        } as Endereco;
         const novoEndereco = {
           ...formData.value.endereco,
           logradouro: dadosViaCEP.logradouro,
@@ -1500,18 +1500,18 @@ const pesquisarCepAPI = async () => {
           bairroNome: dadosDoSeuDB.bairro.nome,
         };
 
-        setFieldValue("endereco.cidade", formData.value.endereco.cidade);
-        setFieldValue(
+        (setFieldValue as (n: string, v: unknown) => void)("endereco.cidade", formData.value.endereco.cidade);
+        (setFieldValue as (n: string, v: unknown) => void)(
           "endereco.bairro",
           formData.value.endereco.bairro || null
         );
-        setFieldValue(
+        (setFieldValue as (n: string, v: unknown) => void)(
           "endereco.ufEstado",
           formData.value.endereco.ufEstado || ""
         );
 
-        validateField("endereco.cidade");
-        validateField("endereco.bairro");
+        (validateField as (name: string) => void)("endereco.cidade");
+        (validateField as (name: string) => void)("endereco.bairro");
 
 
       } else {
@@ -1525,13 +1525,13 @@ const pesquisarCepAPI = async () => {
 
       formData.value.endereco = {
         ...formData.value.endereco,
-        logradouro: dadosViaCEP.logradouro,
-        complemento: dadosViaCEP.complemento,
-        ufEstado: dadosViaCEP.uf,
-        codigoIbge: dadosViaCEP.ibge,
-        cidade: { id: null, nome: dadosViaCEP.localidade },
-        bairro: { id: null, nome: dadosViaCEP.bairro },
-      };
+        logradouro: dadosViaCEP.logradouro ?? '',
+        complemento: dadosViaCEP.complemento ?? '',
+        ufEstado: dadosViaCEP.uf ?? '',
+        codigoIbge: dadosViaCEP.ibge ?? '',
+        cidade: { id: null, nome: dadosViaCEP.localidade ?? '', estado: null },
+        bairro: { id: null, nome: dadosViaCEP.bairro ?? '', cidade: null },
+      } as Endereco;
 
     }
   } catch (error) {

@@ -98,7 +98,7 @@ import RadioButton from "primevue/radiobutton";
 //   : import.meta.env.VITE_API_BASE_URL;
 
 const API_BASE_URL = `/api/orgao-empresa`;
-const documentType = ref("CPF");
+const documentType = ref<"CPF" | "CNPJ">("CPF");
 
 //const appToast = useAppToast();
 const route = useRoute();
@@ -123,7 +123,7 @@ async function fetchDocumentType() {
       );
 
       if (response.data && response.data.tipoDocumento) {
-        documentType.value = response.data.tipoDocumento;
+        documentType.value = response.data.tipoDocumento === "CNPJ" ? "CNPJ" : "CPF";
       }
     } catch (error) {
       console.error("Erro ao buscar o tipo de documento:", error);
