@@ -195,8 +195,9 @@ async function removerItem(item: Estado) {
 
       if (confirmed) {
         const response = await axios.delete(
-          `${API_BASE_URL}?id=${item.id}&idUsuario=32&idCredenciadaUsuario=49393`&idUsuario=32&idCredenciadaUsuario=49393`
+          `${API_BASE_URL}?id=${item.id}&idUsuario=32&idCredenciadaUsuario=49393`
         );
+
 
         if (response.status >= 200 && response.status < 300) {
           genericTableRef.value?.removerItemDaLista(item.id);
