@@ -573,7 +573,23 @@ services:
     networks:
       - docker-lan
     depends_on:
+      - api-estado           
+      
+      
+   nginx-proxy:
+    image: nginx:latest
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443" # Se for usar SSL futuramente
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - docker-lan
+    depends_on:
+      - vue-estado-module
       - api-estado
+      # adicione os outros aqui
 
 networks:
   docker-lan:
