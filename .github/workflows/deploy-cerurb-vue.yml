@@ -1,75 +1,27 @@
-# Deploy Cerurb Vue: build automático em push na main/master (estilo Netlify).
-# Para publicar no servidor, adicione um job de deploy (rsync, Netlify CLI, etc.) e configure os secrets.
-#
-# Se layout/ e *-module/ estiverem numa subpasta (ex.: meu-projeto-test/), defina:
-#   env: ROOT_DIR: meu-projeto-test
-# e use working-directory: ${{ env.ROOT_DIR }} nos steps.
+# Deploy automático do microserviço Atualização (CI/CD).
+# Requer secrets: HOST, USERNAME, SSH_KEY (ver DEPLOY-ESTADO-CI-CD.md).
 
-name: Build Cerurb Vue
+name: Deploy Microserviço Atualização
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    # Se layout/ e *-module/ estiverem numa subpasta, defina working-directory (ex.: meu-projeto-test)
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Executar comandos no servidor via SSH
+        uses: appleboy/ssh-action@master
         with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Prepare .env for layout
-        run: |
-          if [ -f layout/.env.example ] && [ ! -f layout/.env ]; then
-            cp layout/.env.example layout/.env
-          fi
-
-      - name: Build all (remotes + layout)
-        run: |
-          chmod +x scripts/build-all.sh
-          ./scripts/build-all.sh
-
-      - name: Upload layout dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: layout-dist
-          path: layout/dist
-
-      - name: Upload estado-module dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: estado-module-dist
-          path: estado-module/frontend/dist
-
-      # Descomente e repita para outros módulos se quiser baixar os artefatos depois.
-      # - name: Upload tipo-comodo-module dist
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: tipo-comodo-module-dist
-      #     path: tipo-comodo-module/frontend/dist
-
-  # Exemplo de deploy para servidor via SSH (descomente e configure os secrets).
-  # deploy:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Download layout dist
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: layout-dist
-  #     - name: Deploy via rsync
-  #       uses: easingthemes/ssh-deploy@v4
-  #       with:
-  #         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  #         REMOTE_HOST: ${{ secrets.SERVER_HOST }}
-  #         REMOTE_USER: ${{ secrets.SERVER_USER }}
-  #         SOURCE: "layout-dist/"
-  #         TARGET: "/var/www/cerurb-vue/layout/"
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          command_timeout: 30m # Aumente o tempo para builds pesados
+          script: |
+            cd ~/meu-projeto-test
+            git pull origin main
+            docker compose down
+            docker compose up -d --build

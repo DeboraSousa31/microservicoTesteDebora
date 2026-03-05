@@ -1,7 +1,7 @@
-# Deploy automático do microserviço Órgão/Empresa (CI/CD).
+# Deploy automático do microserviço Atualização (CI/CD).
 # Requer secrets: HOST, USERNAME, SSH_KEY (ver DEPLOY-ESTADO-CI-CD.md).
 
-name: Deploy Microserviço Órgão Empresa
+name: Deploy Microserviço Atualização
 
 on:
   push:
@@ -18,7 +18,10 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          command_timeout: 30m # Aumente o tempo para builds pesados
           script: |
             cd ~/meu-projeto-test
             git pull origin main
-            sudo docker compose up -d --build vue-orgao-empresa-module api-orgao-empresa
+            docker compose down
+            docker compose up -d --build
