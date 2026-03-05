@@ -175,12 +175,13 @@ defineExpose({
 </script>
 
 <style scoped>
+/* Barra azul "Estado (27)" — card interno (card dentro do card) */
 .meu-cabecalho-personalizado {
   background-color: var(--primary-color);
   text-align: center;
   color: white;
-  padding: 0.5rem;
-  font-size: 1.2rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.125rem;
   font-weight: 600;
   border-radius: 8px 8px 0 0;
   display: flex;
@@ -192,6 +193,7 @@ defineExpose({
   padding: 0 !important;
 }
 
+/* Container da tabela = card interno: borda e cantos arredondados */
 .meu-container-de-tabela {
   display: flex;
   flex-direction: column;
@@ -200,7 +202,22 @@ defineExpose({
   word-wrap: normal;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e2e8f0;
+}
+
+/* Cabeçalhos das colunas: linha branca, texto preto em negrito (como na referência) */
+:deep(.p-datatable-thead > tr > th) {
+  background: #fff !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  font-size: 0.9375rem;
+  border-color: #e2e8f0 !important;
+}
+
+/* Conteúdo das linhas: tamanho um pouco menor que o cabeçalho */
+:deep(.p-datatable-tbody > tr > td) {
+  font-size: 0.875rem;
 }
 
 .div-acoes {

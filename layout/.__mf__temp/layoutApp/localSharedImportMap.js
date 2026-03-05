@@ -1,17 +1,16 @@
 
 // Windows temporarily needs this file, https://github.com/module-federation/vite/issues/68
 
-    import {loadShare} from "@module-federation/runtime";
     const importMap = {
       
         "vue": async () => {
-          let pkg = await import("__mf__virtual/layoutApp__prebuild__vue__prebuild__.js");
-            return pkg;
+          let pkg = await import("__mf__virtual/layoutApp__prebuild__vue__prebuild__.js")
+          return pkg
         }
       ,
         "vue-router": async () => {
-          let pkg = await import("__mf__virtual/layoutApp__prebuild__vue_mf_2_router__prebuild__.js");
-            return pkg;
+          let pkg = await import("__mf__virtual/layoutApp__prebuild__vue_mf_2_router__prebuild__.js")
+          return pkg
         }
       
     }
@@ -19,16 +18,13 @@
       
           "vue": {
             name: "vue",
-            version: "3.5.29",
+            version: "3.5.17",
             scope: ["default"],
             loaded: false,
             from: "layoutApp",
             async get () {
-              if (false) {
-                throw new Error(`Shared module '${"vue"}' must be provided by host`);
-              }
               usedShared["vue"].loaded = true
-              const {"vue": pkgDynamicImport} = importMap
+              const {"vue": pkgDynamicImport} = importMap 
               const res = await pkgDynamicImport()
               const exportModule = {...res}
               // All npm packages pre-built by vite will be converted to esm
@@ -42,23 +38,19 @@
             },
             shareConfig: {
               singleton: true,
-              requiredVersion: "^3.5.29",
-              
+              requiredVersion: "^3.5.17"
             }
           }
         ,
           "vue-router": {
             name: "vue-router",
-            version: "4.6.4",
+            version: "4.5.1",
             scope: ["default"],
             loaded: false,
             from: "layoutApp",
             async get () {
-              if (false) {
-                throw new Error(`Shared module '${"vue-router"}' must be provided by host`);
-              }
               usedShared["vue-router"].loaded = true
-              const {"vue-router": pkgDynamicImport} = importMap
+              const {"vue-router": pkgDynamicImport} = importMap 
               const res = await pkgDynamicImport()
               const exportModule = {...res}
               // All npm packages pre-built by vite will be converted to esm
@@ -72,8 +64,7 @@
             },
             shareConfig: {
               singleton: true,
-              requiredVersion: "^4.6.4",
-              
+              requiredVersion: "^4.5.1"
             }
           }
         

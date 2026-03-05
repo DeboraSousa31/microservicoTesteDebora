@@ -1,10 +1,5 @@
 <template>
   <div class="view-container d-flex flex-column">
-    <div class="header cerurb-header">
-      <h3 class="header-title">
-        <i class="pi pi-search"></i> Pesquisar Estado
-      </h3>
-    </div>
     <Card class="content-card">
       <template #title>
         <div class="d-flex align-items-center justify-content-end gap-2 flex-wrap">
@@ -118,9 +113,9 @@ import GenericDataTable from "../components/shared/GenericDataTable.vue";
 
 type Estado = { id: number; nome: string; uf: string };
 
-// const API_BASE_URL = import.meta.env.DEV
-//   ? "/api"
-//   : import.meta.env.VITE_API_BASE_URL;
+ //const API_BASE_URL = import.meta.env.DEV
+  // ? "/api"
+  // : import.meta.env.VITE_API_BASE_URL;
 
 const API_BASE_URL = `/api/estado`;
 
@@ -151,7 +146,7 @@ async function fetchEstado(lazyParams: any, filters: any) {
     const response = await axios.get<{
       content: Estado[];
       totalElements: number;
-    }>(`${API_BASE_URL}/pesquisar`, { params });
+    }>(`${API_BASE_URL}/estado/pesquisar`, { params });
     if (response.status >= 200 && response.status < 300) {
       return response.data;
     } else {
@@ -254,8 +249,11 @@ function abrirEmNovaGuia(url: string) {
 </script>
 
 <style scoped>
+/* Card principal = painel branco único (dentro dele o bloco da tabela é o “card dentro do card”) */
 .content-card {
   width: 100%;
+  background: #fff;
+   padding: 28px !important;
 }
 
 .view-container {
@@ -265,16 +263,10 @@ function abrirEmNovaGuia(url: string) {
   width: 100%;
   justify-content: center;
   align-items: center;
-  min-height: 90vh;
-  padding: 20px;
 }
 
 .p-card-title button {
   float: right;
-}
-
-.header-title i {
-  font-size: 1.3rem;
 }
 
 .content-card .p-card-title {

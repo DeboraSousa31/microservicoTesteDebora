@@ -89,8 +89,9 @@ body {
   color: var(--cerurb-text-muted) !important;
 }
 
-/* Header no estilo Cerurb (faixa azul com título) */
-.cerurb-header {
+/* Header no estilo Cerurb (faixa azul com título) — igual ao layout JSF */
+.cerurb-header,
+.header.cerurb-header {
   background: var(--cerurb-header-gradient);
   color: #fff !important;
   padding: 0.75rem 1.25rem;
@@ -100,6 +101,11 @@ body {
 .cerurb-header .header-title {
   color: #fff !important;
   margin: 0;
-  font-weight: 600;
-  font-size: 1.25rem;
+  font-weight: 700;
+  font-size: 1.5rem; /* igual ao JSF (ícone 1.5rem) */
+  font-family: inherit;
+}
+.cerurb-header .header-icon {
+  font-size: 1.5rem;
+  padding-right: 6px;
 }
