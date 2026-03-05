@@ -21,4 +21,4 @@ jobs:
           script: |
             cd ~/meu-projeto-test
             git pull origin main
-            sudo docker compose up -d --build vue-atualizacao-module api-atualizacao
+            docker compose up -d --build
